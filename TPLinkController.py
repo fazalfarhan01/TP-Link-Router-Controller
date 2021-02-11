@@ -8,6 +8,9 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException
 from time import sleep
 from sys import platform
+from browsermobproxy import Server
+import json
+
 
 from colorama import init, Fore, Back, Style
 
@@ -19,9 +22,16 @@ title = Fore.BLACK + Back.GREEN
 
 
 class TP_Link_Controller():
-    def __init__(self, login_email, login_password, router_url="192.168.0.1", driver_path="./bin/chromedriver.exe", DEBUG_MODE=False):
+    def __init__(self,
+                 login_email,
+                 login_password,
+                 router_url="192.168.0.1",
+                 driver_path="./bin/chromedriver.exe",
+                 browsermobproxy_location=r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy",
+                 DEBUG_MODE=False):
         # VARIABLES
         self.driver_path = self.__get_driver_path(driver_path)
+        self.proxy_path = browsermobproxy_location
         self.admin_panel_url = "http://" + router_url + "/"
         self.email = login_email
         self.password = login_password
@@ -29,6 +39,13 @@ class TP_Link_Controller():
         options = webdriver.ChromeOptions()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         # options.headless = True
+
+        self.server = Server(browsermobproxy_location)
+        self.server.start()
+        self.proxy = self.server.create_proxy()
+
+        options.add_argument('--proxy-server=%s' % self.proxy.proxy)
+
         self.driver = webdriver.Chrome(
             executable_path=self.driver_path, options=options)
         self.driver.implicitly_wait(30)
@@ -44,8 +61,8 @@ class TP_Link_Controller():
         else:
             return path
 
-    def __wait_for_data(self, xpath):
-        while self.driver.find_element_by_xpath(xpath).get_attribute("snapshot") is None:
+    def __wait_for_data(self, xpath, attribute="snapshot"):
+        while self.driver.find_element_by_xpath(xpath).get_attribute(attribute) is None:
             pass
 
     def __click_save(self):
@@ -53,6 +70,18 @@ class TP_Link_Controller():
             print(info + "Clicking on Save.")
         self.driver.find_element_by_xpath(
             "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[9]/div/div/div/div[1]/button").click()
+
+    def __get_stok(self, data_url="http://192.168.0.1/webpages/index.1516243669548.html"):
+        self.proxy.new_har("Example")
+        self.driver.get(data_url)
+
+        entries = self.proxy.har['log']["entries"]
+        if "request" in entries[-1].keys():
+            stok = entries[-1]['request']['url'].replace("http://192.168.0.1/cgi-bin/luci/;stok=", "").replace(
+                "/admin/cloud_account?form=check_support", "")
+        if self.DEBUG_MODE:
+            print(info + "Got Stok: {}".format(stok))
+        return stok
 
     def login(self):
         self.driver.get(self.admin_panel_url)
@@ -127,6 +156,22 @@ class TP_Link_Controller():
             "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[5]/div[2]/div[1]/ul/li/div/label").click()
 
         self.__click_save()
+
+    def __get_json_status_data(self, stok):
+        data_url = self.admin_panel_url + \
+            "cgi-bin/luci/;stok="+stok+"/admin/status?form=all"
+        self.driver.get(data_url)
+        json_response = json.loads(
+            self.driver.find_element_by_xpath("/html/body/pre").text)
+        # print(json_response)
+        return json_response
+
+    def get_status(self):
+        self.__wait_for_data(
+            "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/form/div[1]/div[1]/div[1]/div[2]/div[1]/span[2]/input", "snapshot")
+        stok = self.__get_stok()
+        response = self.__get_json_status_data(stok)
+        return response
 
     def turn_on_5G(self):
         if self.DEBUG_MODE:
@@ -237,6 +282,8 @@ class TP_Link_Controller():
         if self.DEBUG_MODE:
             print(warning + "Waiting explicitly for 5 seconds brfore closing")
         sleep(5)
+
+        self.server.stop()
         self.driver.close()
         # self.driver.quit()
 
@@ -246,6 +293,7 @@ if __name__ == "__main__":
         "fazal.farhan@gmail.com", "mohamedfarhan12", DEBUG_MODE=True)
 
     controller.login()
-    controller.turn_off_5G()
+
+    controller.get_status()
 
     controller.close()

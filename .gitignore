@@ -2,3 +2,4 @@ main.py
 .vscode
 env
 __pycache__
+*log
