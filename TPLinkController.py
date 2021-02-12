@@ -10,6 +10,7 @@ from time import sleep
 from sys import platform
 from browsermobproxy import Server
 import json
+import re
 
 
 from colorama import init, Fore, Back, Style
@@ -74,14 +75,14 @@ class TP_Link_Controller():
     def __get_stok(self, data_url="http://192.168.0.1/webpages/index.1516243669548.html"):
         self.proxy.new_har("Example")
         self.driver.get(data_url)
-
         entries = self.proxy.har['log']["entries"]
-        if "request" in entries[-1].keys():
-            stok = entries[-1]['request']['url'].replace("http://192.168.0.1/cgi-bin/luci/;stok=", "").replace(
-                "/admin/cloud_account?form=check_support", "")
-        if self.DEBUG_MODE:
-            print(info + "Got Stok: {}".format(stok))
-        return stok
+        for entry in entries:
+            if 'request' in entry.keys():
+                url = entry['request']['url']
+                if url.startswith("http://192.168.0.1/cgi-bin/luci/;stok=") and "admin" in url:
+                    stok = re.findall("([a-zA-z0-9]+)/", entry['request']['url'].replace(
+                        "http://192.168.0.1/cgi-bin/luci/;stok=", ""))
+                    return stok[0]
 
     def login(self):
         self.driver.get(self.admin_panel_url)
