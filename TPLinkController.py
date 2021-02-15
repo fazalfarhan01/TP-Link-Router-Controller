@@ -321,7 +321,7 @@ class TP_Link_Controller():
         status_response = self.get_status()
         if self.DEBUG_MODE:
             print(
-                info + "Got 5G WiFi Status: {}".format(status_response["data"]["wireless_2g_enable"]))
+                info + "Got 5G WiFi Status: {}".format(status_response["data"]["wireless_5g_enable"]))
         if status_response["data"]["wireless_5g_enable"] == "on":
             return True
         else:
