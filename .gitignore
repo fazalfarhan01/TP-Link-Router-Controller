@@ -3,3 +3,4 @@ main.py
 env
 __pycache__
 *log
+credentials.json

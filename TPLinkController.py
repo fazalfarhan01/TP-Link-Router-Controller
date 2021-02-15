@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
+from os import SEEK_CUR
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
 from time import sleep
 from sys import platform
 from browsermobproxy import Server
@@ -57,24 +58,41 @@ class TP_Link_Controller():
             print(info + "Login Password:\t{}".format(self.password))
 
     def __get_driver_path(self, path):
+        # RETURN THE DEFAULT PATH OF CHROME DRIVER FOR LINUX
         if platform == "linux":
-            return "/usr/lib/chromium-browser/chromedriver"
+            return "/usr/bin/chromedriver"
         else:
             return path
 
-    def __wait_for_data(self, xpath, attribute="snapshot"):
-        while self.driver.find_element_by_xpath(xpath).get_attribute(attribute) is None:
-            pass
+    def __wait_for_data(self, xpath, attribute="snapshot", value=None):
+        sleep(2)
+        # ignored_exceptions = (NoSuchElementException,
+        #                       StaleElementReferenceException,)
+        # dummay_element = WebDriverWait(self.driver, 30, ignored_exceptions=ignored_exceptions)\
+        #     .until(EC.presence_of_element_located((By.XPATH, xpath)))
+        # LOOP UNTIL THE ELEMENT ATTRIBUTE IS NOT "None"
+        if value == None:
+            while self.driver.find_element_by_xpath(xpath).get_attribute(attribute) is value:
+                pass
+        else:
+            while value not in self.driver.find_element_by_xpath(xpath).get_attribute(attribute):
+                pass
 
     def __click_save(self):
+        # THE SAVE BUTTON IN THE WEBPAGE WHICH HAS A COMMON ID AS id="total_save"
         if self.DEBUG_MODE:
             print(info + "Clicking on Save.")
-        self.driver.find_element_by_xpath(
-            "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[9]/div/div/div/div[1]/button").click()
+        # self.driver.find_element_by_xpath("/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[9]/div/div/div/div[1]/button").click()
+        self.driver.find_element_by_id("total_save").click()
 
     def __get_stok(self, data_url="http://192.168.0.1/webpages/index.1516243669548.html"):
-        self.proxy.new_har("Example")
+        # RETURNS THE STOK THAT IS RENEWED AFTER EVERY LOGIN ATTEMPT
+        # FOR EXAMPLE IN THE URL http://router.login/cgi-bin/luci/;stok=dda6af0b1901e48c9ce10d115f287dcd/admin/status?form=all
+        # dda6af0b1901e48c9ce10d115f287dcd IS THE STOK
+        self.proxy.new_har("STOK")
         self.driver.get(data_url)
+        self.__wait_for_data(
+            "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/form/div[1]/div[1]/div[1]/div[2]/div[1]/span[2]/input", "snapshot")
         entries = self.proxy.har['log']["entries"]
         for entry in entries:
             if 'request' in entry.keys():
@@ -111,6 +129,8 @@ class TP_Link_Controller():
             "/html/body/div[1]/div[2]/div[1]/div[1]/div/form[1]/div[2]/div/div/div[1]/span[2]/input[1]")
         password_container.send_keys(self.password)
         password_container.send_keys(Keys.RETURN)
+        self.__wait_for_data(
+            "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/form/div[1]/div[1]/div[1]/div[2]/div[1]/span[2]/input", "snapshot")
 
     def toggle_2g_wifi(self):
         if self.DEBUG_MODE:
@@ -134,6 +154,7 @@ class TP_Link_Controller():
             "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[1]/div[2]/div[1]/ul/li/div/label/span[2]").click()
 
         self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
 
     def toggle_5g_wifi(self):
         if self.DEBUG_MODE:
@@ -157,6 +178,7 @@ class TP_Link_Controller():
             "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[5]/div[2]/div[1]/ul/li/div/label").click()
 
         self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
 
     def __get_json_status_data(self, stok):
         data_url = self.admin_panel_url + \
@@ -168,10 +190,9 @@ class TP_Link_Controller():
         return json_response
 
     def get_status(self):
-        self.__wait_for_data(
-            "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/form/div[1]/div[1]/div[1]/div[2]/div[1]/span[2]/input", "snapshot")
         stok = self.__get_stok()
         response = self.__get_json_status_data(stok)
+        self.driver.back()
         return response
 
     def turn_on_5G(self):
@@ -199,6 +220,7 @@ class TP_Link_Controller():
             print(info + "Clicking on 5G WiFi Checkbox (Turning On)")
             WiFi_5G_Checkbox.click()
             self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
 
     def turn_off_5G(self):
         if self.DEBUG_MODE:
@@ -225,6 +247,7 @@ class TP_Link_Controller():
             print(info + "Clicking on 5G WiFi Checkbox (Turning Off)")
             WiFi_5G_Checkbox.click()
             self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
 
     def turn_on_2G(self):
         if self.DEBUG_MODE:
@@ -251,6 +274,7 @@ class TP_Link_Controller():
             print(info + "Clicking on 2G WiFi Checkbox (Turning On)")
             WiFi_2G_Checkbox.click()
             self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
 
     def turn_off_2G(self):
         if self.DEBUG_MODE:
@@ -277,6 +301,42 @@ class TP_Link_Controller():
             print(info + "Clicking on 2G WiFi Checkbox (Turning Off)")
             WiFi_2G_Checkbox.click()
             self.__click_save()
+        self.__wait_for_save_confirmation_on_wireless_tab()
+
+    def is_2g_on(self):
+        if self.DEBUG_MODE:
+            print(title + "Getting 2.4G WiFi Status" + reset)
+        status_response = self.get_status()
+        if self.DEBUG_MODE:
+            print(
+                info + "Got 2.4G WiFi Status: {}".format(status_response["data"]["wireless_2g_enable"]))
+        if status_response["data"]["wireless_2g_enable"] == "on":
+            return True
+        else:
+            return False
+
+    def is_5g_on(self):
+        if self.DEBUG_MODE:
+            print(title + "Getting 5G WiFi Status" + reset)
+        status_response = self.get_status()
+        if self.DEBUG_MODE:
+            print(
+                info + "Got 5G WiFi Status: {}".format(status_response["data"]["wireless_2g_enable"]))
+        if status_response["data"]["wireless_5g_enable"] == "on":
+            return True
+        else:
+            return False
+
+    def __wait_for_save_confirmation_on_wireless_tab(self):
+        if self.DEBUG_MODE:
+            print(info + "Waiting for save confirmation.")
+        confirmation_logo_x_path = "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[10]"
+        self.__wait_for_data(confirmation_logo_x_path, attribute="style", value="block")
+        if self.DEBUG_MODE:
+            print(info + "Save confirmation opened..!")
+        self.__wait_for_data(confirmation_logo_x_path, attribute="style", value="none")
+        if self.DEBUG_MODE:
+            print(info + "Save confirmation closed..!")
 
     def close(self):
         # waiting explicitly for 5 seconds
@@ -297,4 +357,4 @@ if __name__ == "__main__":
 
     controller.get_status()
 
-    controller.close()
+    # controller.close()
