@@ -19,6 +19,8 @@ bmp_path = r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy"
 
 tplink = controller.TP_Link_Controller(email, password, browsermobproxy_location=bmp_path, DEBUG_MODE=True)
 ```
+By default chrome runs in headless mode (NO UI WILL OPEN)
+If `DEBUG_MODE` is `True` or `headless` option is `False`, it will open chrome.
 
 ## Note: Login before doing anything
 ```PYTHON

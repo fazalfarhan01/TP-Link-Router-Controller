@@ -25,12 +25,13 @@ title = Fore.BLACK + Back.GREEN
 
 class TP_Link_Controller():
     def __init__(self,
-                 login_email:str,
-                 login_password:str,
+                 login_email: str,
+                 login_password: str,
                  router_url="192.168.0.1",
                  driver_path="./bin/chromedriver.exe",
                  browsermobproxy_location=r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy",
-                 DEBUG_MODE=False):
+                 DEBUG_MODE=False,
+                 headless=True):
         # VARIABLES
         self.driver_path = self.__get_driver_path(driver_path)
         self.proxy_path = browsermobproxy_location
@@ -40,7 +41,12 @@ class TP_Link_Controller():
         self.DEBUG_MODE = DEBUG_MODE
         options = webdriver.ChromeOptions()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        # options.headless = True
+
+        # if in debug mode, chrome will open up
+        # else it is decided by the headless arguement passed with constructor
+        if self.DEBUG_MODE:
+            headless = False
+        options.headless = headless
 
         self.server = Server(browsermobproxy_location)
         self.server.start()
@@ -57,14 +63,16 @@ class TP_Link_Controller():
             print(info + "Login Email:\t{}".format(self.email))
             print(info + "Login Password:\t{}".format(self.password))
 
-    def __get_driver_path(self, path:str) -> str:
+    def __get_driver_path(self, path: str) -> str:
         # RETURN THE DEFAULT PATH OF CHROME DRIVER FOR LINUX
         if platform == "linux":
             # os.uname() only works on linux
             if os.uname().machine == "armv7l":
+                # if running on a raspberry pi or armhf machine
                 return "/usr/lib/chromium-browser/chromedriver"
             else:
-                return "/usr/bin/chromedriver" 
+                # if running on any other x86 based linux machine
+                return "/usr/bin/chromedriver"
         else:
             return path
 
@@ -101,9 +109,9 @@ class TP_Link_Controller():
         for entry in entries:
             if 'request' in entry.keys():
                 url = entry['request']['url']
-                if url.startswith("http://192.168.0.1/cgi-bin/luci/;stok=") and "admin" in url:
+                if url.startswith(self.admin_panel_url + "cgi-bin/luci/;stok=") and "admin" in url:
                     stok = re.findall("([a-zA-z0-9]+)/", entry['request']['url'].replace(
-                        "http://192.168.0.1/cgi-bin/luci/;stok=", ""))
+                        (self.admin_panel_url + "cgi-bin/luci/;stok="), ""))
                     return stok[0]
 
     def login(self):
@@ -335,10 +343,12 @@ class TP_Link_Controller():
         if self.DEBUG_MODE:
             print(info + "Waiting for save confirmation.")
         confirmation_logo_x_path = "/html/body/div[1]/div[5]/div[1]/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/form/div[10]"
-        self.__wait_for_data(confirmation_logo_x_path, attribute="style", value="block")
+        self.__wait_for_data(confirmation_logo_x_path,
+                             attribute="style", value="block")
         if self.DEBUG_MODE:
             print(info + "Save confirmation opened..!")
-        self.__wait_for_data(confirmation_logo_x_path, attribute="style", value="none")
+        self.__wait_for_data(confirmation_logo_x_path,
+                             attribute="style", value="none")
         if self.DEBUG_MODE:
             print(info + "Save confirmation closed..!")
 

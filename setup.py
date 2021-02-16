@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="tp-link-controller",
-    version="0.0.1",
+    version="0.0.2",
     author="Mohamed Farhan Fazal",
     author_email="fazal.farhan@gmail.com",
     description="A Python Package to controll TP-Link Routers",
