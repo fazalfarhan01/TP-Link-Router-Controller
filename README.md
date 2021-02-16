@@ -1,6 +1,6 @@
 # TP-link WiFi Router Controller
 # Installation
-```pip
+```BASH
 pip install tp-link-controller
 ```
 
@@ -28,17 +28,19 @@ tplink.login()
 ```
 
 ## The following methods are available
-1. .login() -> Logins to the admin panel
-2. .close() -> Exits the browser and closes the proxy
-3. .get_status() -> Returns a dictionary with a lot of status information.
-4. .turn_on_2G() -> Turns on 2.4G WiFi.
-5. .turn_on_5G() -> Turns on 5G WiFi.
-6. .turn_off_2G() -> Turns off 2.4G WiFi.
-7. .turn_off_5G() -> Turns off 5G WiFi.
-8. .toggle_2g_wifi() -> Toggles 2.4G WiFi
-9. .toggle_5g_wifi() -> Toggles 5G WiFi
-10. .is_2g_on() -> Returns `True` if 2.4G WiFi is `on` else `False`.
-10. .is_5g_on() -> Returns `True` if 5G WiFi is `on` else `False`.
+No. | Method | Use
+--- | --- | ---
+1 | .login() | Logins to the admin panel
+2 | .close() | Exits the browser and closes the proxy
+3 | .get_status() | Returns a dictionary with a lot of status information.
+4 | .turn_on_2G() | Turns on 2.4G WiFi.
+5 | .turn_on_5G() | Turns on 5G WiFi.
+6 | .turn_off_2G() | Turns off 2.4G WiFi.
+7 | .turn_off_5G() | Turns off 5G WiFi.
+8 | .toggle_2g_wifi() | Toggles 2.4G WiFi
+9 | .toggle_5g_wifi() | Toggles 5G WiFi
+10 | .is_2g_on() | Returns `True` if 2.4G WiFi is `on` else `False`.
+11 | .is_5g_on() | Returns `True` if 5G WiFi is `on` else `False`.
 
 
 - Based on Selenium.

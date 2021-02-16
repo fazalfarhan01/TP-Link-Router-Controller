@@ -7,3 +7,4 @@ credentials.json
 tp_link_controller.egg-info
 dist
 build
+APIKEY.topsecret
