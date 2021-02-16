@@ -1,4 +1,44 @@
 # TP-link WiFi Router Controller
+# Installation
+```pip
+pip install tp-link-controller
+```
+
+# Usage
+1. Install [JDK-8](https://www.oracle.com/in/java/technologies/javase/javase-jdk8-downloads.html)
+    - Using Chocolatey: `choco install jdk8`
+2. Download [browsermob-proxy](https://github.com/lightbody/browsermob-proxy/releases/tag/browsermob-proxy-2.1.4) pass the binary path to `TP_Link_controller` object.
+
+```PYTHON
+from TPLinkController import controller
+
+email = "xyz@examplemail.com"
+password = "topSecret"
+
+bmp_path = r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy"
+
+tplink = controller.TP_Link_Controller(email, password, browsermobproxy_location=bmp_path, DEBUG_MODE=True)
+```
+
+## Note: Login before doing anything
+```PYTHON
+tplink.login()
+```
+
+## The following methods are available
+1. .login() -> Logins to the admin panel
+2. .close() -> Exits the browser and closes the proxy
+3. .get_status() -> Returns a dictionary with a lot of status information.
+4. .turn_on_2G() -> Turns on 2.4G WiFi.
+5. .turn_on_5G() -> Turns on 5G WiFi.
+6. .turn_off_2G() -> Turns off 2.4G WiFi.
+7. .turn_off_5G() -> Turns off 5G WiFi.
+8. .toggle_2g_wifi() -> Toggles 2.4G WiFi
+9. .toggle_5g_wifi() -> Toggles 5G WiFi
+10. .is_2g_on() -> Returns `True` if 2.4G WiFi is `on` else `False`.
+10. .is_5g_on() -> Returns `True` if 5G WiFi is `on` else `False`.
+
+
 - Based on Selenium.
 - Uses the WebUI as you would normally do.
 - Made due to the lack of any kind of __API__ to interact with any TP-Link Routers.
@@ -7,7 +47,7 @@
 1. - Hardware: __Archer C1200 v2.0__
    - Firmware Version: __2.0.2 Build 20180118 rel.38979 (EU)__
 
-## To get started:
+## To get started with package dev:
 1. Clone the repository.
 2. Create a virtual environment.
 3. Install all the packages from [requirements.txt](./requirements.txt)
