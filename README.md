@@ -17,6 +17,7 @@
     choco install jdk8
     ```
 5. Download [Browsermob-proxy](https://github.com/lightbody/browsermob-proxy/releases/tag/browsermob-proxy-2.1.4).
+    - For windows, leave it as default, should work out of the box.
     - Pass it to the instance in code.
     - ```PYTHON
       tplink = TP_Link_Controller(email, password, browsermobproxy_location=r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy", DEBUG_MODE=True)

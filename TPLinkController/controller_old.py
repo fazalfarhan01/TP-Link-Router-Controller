@@ -70,7 +70,9 @@ class TP_Link_Controller():
         self.driver.close()
 
 if __name__ == "__main__":
-    controller = TP_Link_Controller("fazal.farhan@gmail.com", "mohamedfarhan12")
+    email = "<Replace with your email>"
+    password = "<Replace with your password>"
+    controller = TP_Link_Controller(email, password)
     controller.login()
     # controller.toggle_2g_wifi()
     controller.toggle_5g_wifi()
