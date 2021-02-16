@@ -4,3 +4,6 @@ env
 __pycache__
 *log
 credentials.json
+tp_link_controller.egg-info
+dist
+build
