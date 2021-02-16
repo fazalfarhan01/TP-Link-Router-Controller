@@ -25,8 +25,8 @@ title = Fore.BLACK + Back.GREEN
 
 class TP_Link_Controller():
     def __init__(self,
-                 login_email,
-                 login_password,
+                 login_email:str,
+                 login_password:str,
                  router_url="192.168.0.1",
                  driver_path="./bin/chromedriver.exe",
                  browsermobproxy_location=r"bin\browsermob-proxy-2.1.4\bin\browsermob-proxy",
@@ -57,10 +57,10 @@ class TP_Link_Controller():
             print(info + "Login Email:\t{}".format(self.email))
             print(info + "Login Password:\t{}".format(self.password))
 
-    def __get_driver_path(self, path):
+    def __get_driver_path(self, path:str) -> str:
         # RETURN THE DEFAULT PATH OF CHROME DRIVER FOR LINUX
         if platform == "linux":
-            return "/usr/bin/chromedriver"
+            return "/usr/lib/chromium-browser/chromedriver"
         else:
             return path
 
@@ -351,7 +351,7 @@ class TP_Link_Controller():
 
 if __name__ == "__main__":
     controller = TP_Link_Controller(
-        "fazal.farhan@gmail.com", "mohamedfarhan12", DEBUG_MODE=True)
+        "YOUREMAIL@EXAMPLE.COM", "YOURPASSWORD", DEBUG_MODE=True)
 
     controller.login()
 
