@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from os import SEEK_CUR
+import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -60,7 +60,11 @@ class TP_Link_Controller():
     def __get_driver_path(self, path:str) -> str:
         # RETURN THE DEFAULT PATH OF CHROME DRIVER FOR LINUX
         if platform == "linux":
-            return "/usr/lib/chromium-browser/chromedriver"
+            # os.uname() only works on linux
+            if os.uname().machine == "armv7l":
+                return "/usr/lib/chromium-browser/chromedriver"
+            else:
+                return "/usr/bin/chromedriver" 
         else:
             return path
 
